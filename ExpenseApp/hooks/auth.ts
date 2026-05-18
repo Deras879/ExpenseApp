@@ -11,6 +11,22 @@ export const saveToken = async (token: string) => {
   }
 };
 
+export const saveUserData = async (userData: any) => {
+  try {
+    await SecureStore.setItemAsync("userData", JSON.stringify(userData));
+  } catch (error) {
+    console.error("Error saving user data:", error);
+  }
+};
+
+export const deleteUserData = async () => {
+  try {
+    await SecureStore.deleteItemAsync("userData");
+  } catch (error) {
+    console.error("Error deleting user data:", error);
+  }
+};
+
 export const saveRefreshToken = async (token: string) => {
   try {
     await SecureStore.setItemAsync("refreshToken", token);
@@ -68,12 +84,8 @@ export const useToken = () => {
 export const isTokenExpired = (token: string): boolean => {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
-    console.log(payload.exp);
-
     return payload.exp * 1000 < Date.now();
   } catch {
-    console.log("entra al catch");
-
     return true;
   }
 };

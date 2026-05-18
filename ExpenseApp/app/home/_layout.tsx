@@ -1,46 +1,66 @@
-import { Tabs } from "expo-router";
+import { getRefreshToken, isTokenExpired } from "@/hooks/auth";
+import { Stack, useRouter } from "expo-router";
 import React from "react";
-import { View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
-import { HapticTab } from "@/components/haptic-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+export default function HomeLayout() {
+  const router = useRouter();
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  // Guard: si no está logueado, redirigir a landing
+  React.useEffect(() => {
+    getRefreshToken().then((token) => {
+      if (!token || isTokenExpired(token)) {
+        router.replace("/landing");
+      }
+    });
+  }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>
-        <Tabs
-          screenOptions={{
-            tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-            headerShown: false,
-            tabBarButton: HapticTab,
-          }}
-        >
-          <Tabs.Screen
-            name="dashboard"
-            options={{
-              title: "Home",
-              tabBarIcon: ({ color }) => (
-                <IconSymbol size={28} name="house.fill" color={color} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="create"
-            options={{
-              title: "Create",
-              tabBarIcon: ({ color }) => (
-                <IconSymbol size={28} name="plus" color={color} />
-              ),
-            }}
-          />
-        </Tabs>
-      </View>
-    </SafeAreaView>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" options={{ animation: "none" }} />
+      <Stack.Screen
+        name="create"
+        options={{
+          animation: "none",
+          presentation: "transparentModal",
+          contentStyle: { backgroundColor: "transparent" },
+        }}
+      />
+      <Stack.Screen
+        name="settings"
+        options={{
+          animation: "slide_from_right",
+        }}
+      />
+      <Stack.Screen
+        name="goals/[id]"
+        options={{
+          animation: "slide_from_right",
+        }}
+      />
+      <Stack.Screen
+        name="goals/create"
+        options={{
+          animation: "none",
+          presentation: "transparentModal",
+          contentStyle: { backgroundColor: "transparent" },
+        }}
+      />
+      <Stack.Screen
+        name="goals/edit"
+        options={{
+          animation: "none",
+          presentation: "transparentModal",
+          contentStyle: { backgroundColor: "transparent" },
+        }}
+      />
+      <Stack.Screen
+        name="goals/contribute"
+        options={{
+          animation: "none",
+          presentation: "transparentModal",
+          contentStyle: { backgroundColor: "transparent" },
+        }}
+      />
+    </Stack>
   );
 }

@@ -9,6 +9,7 @@ import { useRouter } from "expo-router";
 import { MotiView } from "moti";
 import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
+import { Easing } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = {};
@@ -19,35 +20,44 @@ const Start = (props: Props) => {
   const router = useRouter();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-    }, 3000);
+    let destination = "/landing";
 
-    const navigate = setTimeout(async () => {
+    const check = setTimeout(async () => {
       const refreshToken = await getRefreshToken();
       const isExpired = isTokenExpired(refreshToken || "");
-
       if (refreshToken && !isExpired) {
-        router.push("/home");
+        destination = "/home";
       } else {
         deleteToken();
         deleteRefreshToken();
-        router.push("/landing");
       }
-    }, 3500);
+    }, 0);
+
+    const sweep = setTimeout(() => {
+      setIsVisible(false);
+    }, 2800);
+
+    const navigate = setTimeout(() => {
+      router.replace(destination as any);
+    }, 3200);
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(check);
+      clearTimeout(sweep);
       clearTimeout(navigate);
     };
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#1457f6" }}>
       <MotiView
-        from={{ opacity: 1 }}
-        animate={{ opacity: isVisible ? 1 : 0 }}
-        transition={{ type: "timing", duration: 500 }}
+        from={{ translateY: 0 }}
+        animate={{ translateY: isVisible ? 0 : -1000 }}
+        transition={{
+          type: "timing",
+          duration: 380,
+          easing: Easing.in(Easing.cubic),
+        }}
         style={{ backgroundColor: "#1457f6", flex: 1 }}
       >
         <View

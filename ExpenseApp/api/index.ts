@@ -7,19 +7,26 @@ import {
 } from "@/hooks/auth";
 
 const apiClient = async (endpoint: string, options: RequestInit = {}) => {
-  const baseUrl = process.env.EXPO_PUBLIC_API_URL; // Cambia esto a tu URL base
+  const baseUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (!baseUrl) throw new Error("EXPO_PUBLIC_API_URL no está definida");
   const url = `${baseUrl}${endpoint}`;
+
   try {
     const response = await fetch(url, {
+      ...options,
       headers: {
         "Content-Type": "application/json",
+        ...options.headers,
       },
-      ...options,
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || "API request failed");
+      const err = new Error(
+        errorData.error || "API request failed",
+      ) as Error & { status: number };
+      err.status = response.status;
+      throw err;
     }
     return await response.json();
   } catch (error) {
@@ -57,10 +64,13 @@ export const authFetch = async (
       });
       token = newToken.token;
       if (token) {
-        saveToken(token);
+        await saveToken(token);
       }
     } catch (error) {
-      throw new Error("Failed to refresh token: " + error.message);
+      throw new Error(
+        "Failed to refresh token: " +
+          (error instanceof Error ? error.message : String(error)),
+      );
     }
   }
   return apiClient(endpoint, {
